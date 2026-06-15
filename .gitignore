@@ -1,8 +1,13 @@
-node_modules/
-build/
-dist/
-coverage/
+# Ignorar ficheiros de dados locais do Authelia
+chat-infra/authelia/db.sqlite3
+chat-infra/authelia/notification.txt
+
+# Ignorar ficheiros temporários do sistema ou logs
 .DS_Store
 *.log
 .env*
 !.env.example
+node_modules/
+build/
+dist/
+coverage/

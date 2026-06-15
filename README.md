@@ -1,20 +1,36 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Chat IPCA - Infraestrutura Distribuída e Alta Disponibilidade
 
-# Run and deploy your AI Studio app
+Este repositório contém a Prova de Conceito (PoC) para a infraestrutura de um sistema de Chat seguro, altamente disponível e distribuído. O ambiente foi totalmente desenhado utilizando **Docker Compose** e corre sobre uma máquina virtual **Debian (instalação mínima)** no Hyper-V.
 
-This contains everything you need to run your app locally.
+## 🏗️ Arquitetura do Sistema
 
-View your app in AI Studio: https://ai.studio/apps/4c4e7c21-8cd0-407d-a095-9beca6d7eb52
+A infraestrutura foi projetada seguindo as melhores práticas de resiliência, tolerância a falhas (*Failover*) e distribuição de carga (*Load Balancing*):
 
-## Run Locally
+![Arquitetura Planejada](docs/arquitetura.png)
 
-**Prerequisites:**  Node.js
+### Componentes Principais:
+1. **Camada de Entrada (Proxy & Load Balancer):** Dois nós **Nginx** em paralelo que distribuem o tráfego de forma equitativa e garantem redundância.
+2. **Camada de Autenticação (IAM):** Clusterizado com **Authelia** (em modo *Forward Auth*), protegendo a aplicação com um sistema de login centralizado sem necessidade de alterar o código-fonte do chat.
+3. **Camada de Aplicação:** Múltiplas instâncias do servidor de Chat isoladas e balanceadas pelo Nginx.
+4. **Camada de Persistência (Dados):** Cluster **PostgreSQL** com replicação síncrona/assíncrona (Master-Slave) gerido por um **Pgpool-II**, que faz o balanceamento das consultas de leitura e garante o failover automático do banco de dados.
 
+---
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 📁 Estrutura de Diretórios
+
+O projeto adota o padrão *Monorepo*, organizando a infraestrutura e configurações de forma modular:
+
+```text
+chat-ipca/
+├── .gitignore                  # Regras de exclusão para o Git (dados locais e logs)
+├── README.md                   # Documentação principal do projeto
+└── chat-infra/                 # Ficheiros de configuração da infraestrutura
+    ├── docker-compose.yml      # Orquestração de todos os containers do cluster
+    ├── nginx.conf              # Configuração de Load Balancing e regras do Authelia
+    ├── authelia/               # Configurações do sistema de autenticação
+    │   ├── configuration.yml
+    │   └── users_database.yml
+    └── postgres-init/          # Scripts de inicialização automática do cluster SQL
+        └── init-multiple-databases.sql
+
+#
