@@ -6,6 +6,7 @@ import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from "@google/genai";
 import crypto from 'crypto';
 import pg from 'pg';
+import os from 'os';
 import { createAdapter } from '@socket.io/postgres-adapter';
 
 const { Pool } = pg;
@@ -227,6 +228,7 @@ async function startServer() {
 
   io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
+    socket.emit('node-info', { nodeId: os.hostname() });
 
     socket.on('set-nickname', async (nickname: string) => {
       await insertUser(socket.id, nickname);

@@ -21,6 +21,7 @@ export default function App() {
   
   const [globalUsers, setGlobalUsers] = useState<User[]>([]);
   const [availableRooms, setAvailableRooms] = useState<ChatRoom[]>([]);
+  const [connectedNode, setConnectedNode] = useState<string | null>(null);
   
   // Tabs/Open rooms tracking
   const [openRooms, setOpenRooms] = useState<ChatRoom[]>([]);
@@ -53,6 +54,10 @@ export default function App() {
       setActiveRoomId(null);
       fetchAvailableRooms();
       socket.emit('fetch-global-users');
+    });
+
+    socket.on('node-info', (data: { nodeId: string }) => {
+      setConnectedNode(data.nodeId);
     });
 
     socket.on('global-users', (users: User[]) => {
@@ -90,6 +95,7 @@ export default function App() {
 
     return () => {
       socket.off('registered');
+      socket.off('node-info');
       socket.off('global-users');
       socket.off('room-created');
       socket.off('private-room-created');
@@ -174,7 +180,7 @@ export default function App() {
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-[#0B0C0E] flex items-center justify-center p-4 font-sans">
+      <div className="min-h-screen bg-[#0B0C0E] flex items-center justify-center p-4 font-sans relative">
         <div className="bg-[#0E1116] p-8 rounded-2xl shadow-xl border border-[#2D333D] w-full max-w-md">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold tracking-tight mb-2 flex items-center justify-center gap-3 text-[#00F2FF]">
@@ -201,6 +207,12 @@ export default function App() {
             </button>
           </form>
         </div>
+        
+        {connectedNode && (
+          <div className="fixed bottom-2 right-2 text-[10px] text-[#475569] font-mono select-none pointer-events-none z-50">
+            Conectado ao nó: {connectedNode}
+          </div>
+        )}
       </div>
     );
   }
@@ -208,7 +220,7 @@ export default function App() {
   const activeRoom = openRooms.find(r => r.id === activeRoomId);
 
   return (
-    <div className="min-h-screen bg-[#0B0C0E] flex flex-col font-sans text-[#E2E8F0] overflow-hidden">
+    <div className="min-h-screen bg-[#0B0C0E] flex flex-col font-sans text-[#E2E8F0] overflow-hidden relative">
       {/* Header */}
       <header className="bg-[#14171C] border-b border-[#2D333D] flex-shrink-0 select-none">
         <div className="px-4 h-14 flex items-center justify-between">
@@ -546,6 +558,12 @@ export default function App() {
           </div>
         )}
       </div>
+
+      {connectedNode && (
+        <div className="fixed bottom-2 right-2 text-[10px] text-[#475569] font-mono select-none pointer-events-none z-50 bg-[#0B0C0E]/80 px-2 py-1 rounded">
+          Conectado ao nó: {connectedNode}
+        </div>
+      )}
     </div>
   );
 }
