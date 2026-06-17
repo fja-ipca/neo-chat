@@ -105,14 +105,11 @@ services:
     restart: always
 
   # ==========================================
-  # CAMADA DE PROXY E LOAD BALANCER (NGINX)
+  # CAMADA DE PROXY E LOAD BALANCER (NGINX HA)
   # ==========================================
-  nginx:
+  nginx_01:
     image: nginx:alpine
-    container_name: nginx_proxy
-    ports:
-      - "80:80"
-      - "443:443" # <-- Adiciona a porta HTTPS
+    container_name: nginx_proxy_01
     volumes:
       - ./nginx-config/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx-certs:/etc/nginx/ssl
@@ -122,6 +119,35 @@ services:
     depends_on:
       - authelia
       - neo_chat
+    restart: always
+
+  nginx_02:
+    image: nginx:alpine
+    container_name: nginx_proxy_02
+    volumes:
+      - ./nginx-config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx-certs:/etc/nginx/ssl
+      - ./html-stub:/usr/share/nginx/html/ipca-chat
+    networks:
+      - web_net  # Isolado da rede interna de dados
+    depends_on:
+      - authelia
+      - neo_chat
+    restart: always
+
+  nginx_lb:
+    image: nginx:alpine
+    container_name: nginx_lb
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-lb-config/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - web_net
+    depends_on:
+      - nginx_01
+      - nginx_02
     restart: always
 
 # ==========================================
