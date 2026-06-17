@@ -44,6 +44,10 @@ const pool = new Pool({
   port: parseInt(process.env.DB_PORT || '5432'),
 });
 
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err);
+});
+
 let isDBConnected = false;
 
 async function initDB() {
@@ -66,6 +70,11 @@ async function initDB() {
         room_id TEXT,
         user_id TEXT,
         PRIMARY KEY (room_id, user_id)
+      );
+      CREATE TABLE IF NOT EXISTS socket_io_attachments (
+          id          bigserial UNIQUE,
+          created_at  timestamptz DEFAULT NOW(),
+          payload     bytea
       );
     `);
 

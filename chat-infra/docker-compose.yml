@@ -98,6 +98,7 @@ services:
     environment:
       - PORT=3000
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - DB_HOST=pgpool
     networks:
       web_net:
         aliases:
@@ -112,6 +113,7 @@ services:
     environment:
       - PORT=3000
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - DB_HOST=pgpool
     networks:
       web_net:
         aliases:
