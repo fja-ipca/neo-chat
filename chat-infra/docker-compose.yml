@@ -5,7 +5,7 @@ services:
   # CAMADA DE AUTENTICAÇÃO (RAUTHY)
   # ==========================================
   rauthy:
-    image: ghcr.io/sebadob/rauthy:0.24.4
+    image: ghcr.io/sebadob/rauthy:latest
     container_name: rauthy_server
     environment:
       - DATABASE_URL=sqlite:data/rauthy.sqlite
@@ -44,7 +44,7 @@ services:
       - PORT=3000
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       - REDIS_HOST=redis
-      - OIDC_ISSUER=http://rauthy:8080/auth/v1/
+      - OIDC_ISSUER=https://chat.local/auth/v1/
       - OIDC_CLIENT_ID=neo-chat
       - OIDC_CLIENT_SECRET=secret
       - BASE_URL=https://chat.local
@@ -65,7 +65,7 @@ services:
       - PORT=3000
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       - REDIS_HOST=redis
-      - OIDC_ISSUER=http://rauthy:8080/auth/v1/
+      - OIDC_ISSUER=https://chat.local/auth/v1/
       - OIDC_CLIENT_ID=neo-chat
       - OIDC_CLIENT_SECRET=secret
       - BASE_URL=https://chat.local
