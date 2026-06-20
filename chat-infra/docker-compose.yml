@@ -2,90 +2,35 @@
 
 services:
   # ==========================================
-  # CAMADA DE PERSISTÊNCIA (POSTGRESQL MASTER)
+  # CAMADA DE AUTENTICAÇÃO (RAUTHY)
   # ==========================================
-  psql_01:
-    image: bitnami/postgresql:latest
-    container_name: psql_01
+  rauthy:
+    image: ghcr.io/sebadob/rauthy:0.24.4
+    container_name: rauthy_server
     environment:
-      - POSTGRESQL_USERNAME=chat_admin          # Usuário padrão do chat
-      - POSTGRESQL_PASSWORD=senha_secreta
-      - POSTGRESQL_DATABASE=chat_db             # Banco padrão do chat
-      - POSTGRESQL_REPLICATION_MODE=master      # Define este nó como o Master
-      - POSTGRESQL_REPLICATION_USER=replicador  # Usuário que o Slave usará para copiar os dados
-      - POSTGRESQL_REPLICATION_PASSWORD=senha_replicacao
+      - DATABASE_URL=sqlite:data/rauthy.sqlite
+      - PUB_URL=chat.local
+      - LISTEN_SCHEME=http
+      - ADMIN_PASSWORD=admin_secret
     volumes:
-      - psql_master_data:/bitnami/postgresql
-      - ./postgres-config:/docker-entrypoint-initdb.d:ro  # Pasta atualizada!
-    networks:
-      - db_net
-    restart: always
-
-  # ==========================================
-  # CAMADA DE PERSISTÊNCIA (POSTGRESQL SLAVE)
-  # ==========================================
-  psql_01_rr:
-    image: bitnami/postgresql:latest
-    container_name: psql_01_rr
-    environment:
-      - POSTGRESQL_PASSWORD=senha_secreta
-      - POSTGRESQL_REPLICATION_MODE=slave       # Define este nó como uma Réplica (Slave)
-      - POSTGRESQL_MASTER_HOST=psql_01          # Aponta para o nome do contêiner do Master
-      - POSTGRESQL_MASTER_PORT_NUMBER=5432
-      - POSTGRESQL_REPLICATION_USER=replicador  # Usa as credenciais que o Master liberou
-      - POSTGRESQL_REPLICATION_PASSWORD=senha_replicacao
-    volumes:
-      - psql_replica_data:/bitnami/postgresql   # Volume próprio para a réplica
-    depends_on:
-      - psql_01
-    networks:
-      - db_net
-    restart: always
-
-# ==========================================
-  # CAMADA DE BALANCEAMENTO DE DADOS (PGPOOL-II)
-  # ==========================================
-  pgpool:
-    image: bitnamilegacy/pgpool:4.6.2-debian-12-r7
-    container_name: pgpool_balancer
-    environment:
-      - PGPOOL_BACKEND_NODES=0:psql_01:5432,1:psql_01_rr:5432
-      - PGPOOL_SR_CHECK_USER=chat_admin
-      - PGPOOL_SR_CHECK_PASSWORD=senha_secreta
-      - PGPOOL_SR_CHECK_DATABASE=chat_db
-      - PGPOOL_ENABLE_LOAD_BALANCE=yes
-      # Novas variáveis obrigatórias da imagem legacy:
-      - PGPOOL_ADMIN_USERNAME=admin
-      - PGPOOL_ADMIN_PASSWORD=senha_pgpool_admin
-      - PGPOOL_POSTGRES_USERNAME=chat_admin
-      - PGPOOL_POSTGRES_PASSWORD=senha_secreta
+      - rauthy_data:/app/data
     ports:
-      - "5432:5432"
-    depends_on:
-      - psql_01
-      - psql_01_rr
-    networks:
-      - db_net
-    restart: always
-
-  # ==========================================
-  # CAMADA DE AUTENTICAÇÃO (AUTHELIA)
-  # ==========================================
-  authelia:
-    image: authelia/authelia:latest
-    container_name: authelia_server
-    user: "1000:1000"
-    ports:
-      - "9091:9091"
-    volumes:
-      - ./authelia-config:/config
+      - "8080:8080"
     networks:
       db_net:
       web_net:
         aliases:
-          - authelia
-    depends_on:
-      - pgpool
+          - rauthy
+    restart: always
+
+  # ==========================================
+  # CAMADA DE CACHE E SINCRO (REDIS)
+  # ==========================================
+  redis:
+    image: redis:alpine
+    container_name: redis_cache
+    networks:
+      - db_net
     restart: always
 
   # ==========================================
@@ -98,7 +43,13 @@ services:
     environment:
       - PORT=3000
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
-      - DB_HOST=pgpool
+      - REDIS_HOST=redis
+      - OIDC_ISSUER=http://rauthy:8080/auth/v1/
+      - OIDC_CLIENT_ID=neo-chat
+      - OIDC_CLIENT_SECRET=secret
+      - BASE_URL=https://chat.local
+    depends_on:
+      - redis
     networks:
       web_net:
         aliases:
@@ -113,7 +64,13 @@ services:
     environment:
       - PORT=3000
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
-      - DB_HOST=pgpool
+      - REDIS_HOST=redis
+      - OIDC_ISSUER=http://rauthy:8080/auth/v1/
+      - OIDC_CLIENT_ID=neo-chat
+      - OIDC_CLIENT_SECRET=secret
+      - BASE_URL=https://chat.local
+    depends_on:
+      - redis
     networks:
       web_net:
         aliases:
@@ -134,7 +91,7 @@ services:
     networks:
       - web_net  # Isolado da rede interna de dados
     depends_on:
-      - authelia
+      - rauthy
       - neo_chat_01
       - neo_chat_02
     restart: always
@@ -149,7 +106,7 @@ services:
     networks:
       - web_net  # Isolado da rede interna de dados
     depends_on:
-      - authelia
+      - rauthy
       - neo_chat_01
       - neo_chat_02
     restart: always
@@ -179,5 +136,4 @@ networks:
     driver: bridge
 
 volumes:
-  psql_master_data:
-  psql_replica_data:
+  rauthy_data:

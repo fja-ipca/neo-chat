@@ -10,5 +10,10 @@
     "build": "npm run build --prefix chat-infra/neo-chat",
     "start": "npm run start --prefix chat-infra/neo-chat",
     "lint": "npm run lint --prefix chat-infra/neo-chat"
+  },
+  "dependencies": {
+    "@types/express-session": "^1.19.0",
+    "express-session": "^1.19.0",
+    "openid-client": "^6.8.4"
   }
 }

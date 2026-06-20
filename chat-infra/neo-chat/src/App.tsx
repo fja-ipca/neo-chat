@@ -37,6 +37,28 @@ export default function App() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    fetch('/chat-api/auth/me')
+      .then(res => {
+        if (res.ok) return res.json();
+        throw new Error('Not logged in');
+      })
+      .then(user => {
+        sessionStorage.setItem('nickname', user.nickname);
+        setIsCheckingAuth(false);
+        // If socket is already connected, emit here
+        if (socket.connected) {
+          socket.emit('set-nickname', user.nickname);
+        }
+      })
+      .catch(() => {
+        sessionStorage.removeItem('nickname');
+        setIsCheckingAuth(false);
+      });
+  }, []);
+
   useEffect(() => {
     const handleConnect = () => {
       const savedNickname = sessionStorage.getItem('nickname');
@@ -187,25 +209,22 @@ export default function App() {
               <MessageSquare className="w-8 h-8 text-[#00F2FF]" />
               neo-chat
             </h1>
-            <p className="text-[#64748B]">Enter a nickname to join the network.</p>
+            <p className="text-[#64748B]">Authenticate with OpenID Connect to join the network.</p>
           </div>
-          <form onSubmit={handleSetNickname} className="space-y-4">
-            <input
-              autoFocus
-              type="text"
-              value={nicknameInput}
-              onChange={(e) => setNicknameInput(e.target.value)}
-              placeholder="Nickname"
-              className="w-full bg-[#14171C] border border-[#2D333D] text-[#E2E8F0] rounded-lg px-4 py-3 focus:outline-none focus:border-[#00F2FF] transition-shadow"
-              required
-            />
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-br from-[#00F2FF] to-[#4F46E5] hover:opacity-90 shadow-lg shadow-[#00F2FF1A] text-white font-bold rounded-lg px-4 py-3 transition-all"
-            >
-              Enter chat
-            </button>
-          </form>
+          <div className="space-y-4">
+            {isCheckingAuth ? (
+               <div className="flex justify-center p-4">
+                  <div className="w-8 h-8 border-4 border-[#00F2FF] border-t-transparent rounded-full animate-spin"></div>
+               </div>
+            ) : (
+                <a
+                  href="/chat-api/auth/login"
+                  className="w-full bg-gradient-to-br from-[#00F2FF] to-[#4F46E5] hover:opacity-90 shadow-lg shadow-[#00F2FF1A] text-white font-bold rounded-lg px-4 py-3 transition-all inline-flex justify-center items-center"
+                >
+                  Login with Rauthy
+                </a>
+            )}
+          </div>
         </div>
         
         {connectedNode && (

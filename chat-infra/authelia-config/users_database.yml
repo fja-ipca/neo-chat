@@ -1,8 +1,0 @@
-users:
-  admin:
-    displayname: "Administrador do Chat"
-    password: "$argon2id$v=19$m=65536,t=3,p=4$+C5U+8U5hvF5tgl6USK8IQ$3XsFXXNa8IO/+WPx5BetGNrF3QNYn9ecX8qKXj6TRYI" # "teste1234"
-    email: admin@localhost
-    groups:
-      - admins
-      - users
