@@ -9,11 +9,7 @@ services:
     container_name: rauthy_server
     environment:
       - DATABASE_URL=sqlite:data/rauthy.sqlite
-      - PUB_URL=chat.local
-      - LISTEN_SCHEME=http
       - ADMIN_PASSWORD=admin_secret
-      - ENC_KEYS=kid1/bV3/U2H4b4+m9g0+e7A1f8vR/Q9A8b9O8cX/R7pQvT8=
-      - ENC_KEY_ACTIVE=kid1
     volumes:
       - rauthy_data:/app/data
       - ./config.toml:/app/config.toml

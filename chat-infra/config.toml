@@ -1,3 +1,32 @@
+[bootstrap]
+admin_email = "admin@chat.local"
+
 [cluster]
+node_id = 1
+nodes = [
+    "1 localhost:8100 localhost:8200",
+]
 secret_raft = "1234567890abcdef1234567890abcdef"
 secret_api = "1234567890abcdef1234567890abcdef"
+
+[email]
+smtp_url = "localhost"
+smtp_username = "username"
+smtp_password = "password"
+smtp_from = "Rauthy <rauthy@localhost>"
+
+[encryption]
+keys = ["kid1/bV3/U2H4b4+m9g0+e7A1f8vR/Q9A8b9O8cX/R7pQvT8="]
+key_active = "kid1"
+
+[events]
+email = "admin@chat.local"
+
+[server]
+scheme = "http"
+pub_url = "chat.local"
+proxy_mode = false
+
+[webauthn]
+rp_id = "chat.local"
+rp_origin = "http://chat.local"
