@@ -23,6 +23,20 @@ services:
     restart: always
 
   # ==========================================
+  # SERVIÇO DE EMAIL (MAILPIT PARA DESENVOLVIMENTO)
+  # ==========================================
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit
+    networks:
+      - db_net
+      - web_net
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    restart: always
+
+  # ==========================================
   # CAMADA DE CACHE E SINCRO (REDIS)
   # ==========================================
   redis:

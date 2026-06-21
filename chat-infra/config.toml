@@ -10,10 +10,10 @@ secret_raft = "1234567890abcdef1234567890abcdef"
 secret_api = "1234567890abcdef1234567890abcdef"
 
 [email]
-smtp_url = "localhost"
-smtp_username = "username"
-smtp_password = "password"
-smtp_from = "Rauthy <rauthy@localhost>"
+smtp_url = "mailpit"
+smtp_port = 1025
+danger_insecure = true
+smtp_from = "Rauthy <rauthy@chat.local>"
 
 [encryption]
 keys = ["kid1/bV3/U2H4b4+m9g0+e7A1f8vR/Q9A8b9O8cX/R7pQvT8="]
