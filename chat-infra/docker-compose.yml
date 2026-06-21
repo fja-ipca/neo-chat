@@ -16,6 +16,7 @@ services:
       - ENC_KEY_ACTIVE=kid1
     volumes:
       - rauthy_data:/app/data
+      - ./config.toml:/app/config.toml
     ports:
       - "8080:8080"
     networks:
